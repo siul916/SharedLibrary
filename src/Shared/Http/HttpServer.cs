@@ -28,12 +28,31 @@ public abstract class HttpServer
 
 	public async Task Start()
 	{
-		server.Start();
+		try
+		{
+			server.Start();
+			Console.WriteLine($"HttpListener started. IsListening={server.IsListening}");
+		}
+		catch(Exception ex)
+		{
+			Console.WriteLine("Failed to start HttpListener: " + ex.ToString());
+		
+			throw;
+		}
 
 		while(server.IsListening)
 		{
-			HttpListenerContext ctx = await server.GetContextAsync();
-			_ = router.HandleContextAsync(ctx);
+			try
+			{
+				HttpListenerContext ctx = await server.GetContextAsync();
+				_ = router.HandleContextAsync(ctx);
+			}
+			catch(Exception ex)
+			{
+				Console.WriteLine("Error while accepting or handling context: " + ex.ToString());
+			
+				await Task.Delay(100);
+			}
 		}
 	}
 
